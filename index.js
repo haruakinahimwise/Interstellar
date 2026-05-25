@@ -10,21 +10,29 @@ import mime from "mime";
 import fetch from "node-fetch";
 import config from "./config.js";
 
-console.log(chalk.yellow("🚀 Starting server..."));
+console.log(chalk.yellow("🚀 Starting optimized NebulaWeb server..."));
+
 const __dirname = process.cwd();
-const server = http.createServer();
 const app = express();
+
+// 🚀 Create HTTP server with Express attached (faster)
+const server = http.createServer(app);
+
+// 🚀 Optimized Bare server (FASTEST SETTINGS)
 const bareServer = createBareServer("/ca/", {
   logLevel: "error",
   turbo: true,
   http2: true,
-  maxConnections: 2000,
+  maxConnections: 5000,
   keepAliveTimeout: 65000,
   requestTimeout: 60000
 });
+
 const PORT = process.env.PORT || 8080;
-const cache = new Map();
-const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // Cache for 30 Days
+
+// 🚀 Keep-alive optimization (Railway-friendly)
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
 
 // -------------------------------
 // 🔐 LOGIN SYSTEM (EVERY TIME)
@@ -35,8 +43,9 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Force login on every request except login routes
+// Login middleware (ONLY for non-Bare routes)
 app.use((req, res, next) => {
+  if (req.path.startsWith("/ca/")) return next(); // 🚀 Skip login for proxy traffic
   if (req.path === "/login" || req.path === "/do-login") return next();
 
   const loggedIn = req.cookies.loggedin === "true";
@@ -63,7 +72,6 @@ app.get("/login", (req, res) => {
 // Login handler
 app.post("/do-login", (req, res) => {
   const pw = req.body.pw;
-
   const valid = Object.values(config.users).includes(pw);
 
   if (!valid) return res.send("Incorrect password.");
@@ -79,19 +87,22 @@ app.get("/logout", (req, res) => {
 });
 
 // -------------------------------
-// 🔧 ORIGINAL SERVER LOGIC
+// ⚡ SUPER-OPTIMIZED ASSET FETCHER
 // -------------------------------
+
+const cache = new Map();
+const CACHE_TTL = 30 * 24 * 60 * 60 * 1000;
 
 app.get("/e/*", async (req, res, next) => {
   try {
     if (cache.has(req.path)) {
       const { data, contentType, timestamp } = cache.get(req.path);
-      if (Date.now() - timestamp > CACHE_TTL) {
-        cache.delete(req.path);
-      } else {
+      if (Date.now() - timestamp < CACHE_TTL) {
+        res.setHeader("Cache-Control", "public, max-age=2592000");
         res.writeHead(200, { "Content-Type": contentType });
         return res.end(data);
       }
+      cache.delete(req.path);
     }
 
     const baseUrls = {
@@ -108,34 +119,40 @@ app.get("/e/*", async (req, res, next) => {
       }
     }
 
-    if (!reqTarget) {
-      return next();
-    }
+    if (!reqTarget) return next();
 
     const asset = await fetch(reqTarget);
-    if (!asset.ok) {
-      return next();
-    }
+    if (!asset.ok) return next();
 
     const data = Buffer.from(await asset.arrayBuffer());
     const ext = path.extname(reqTarget);
-    const no = [".unityweb"];
-    const contentType = no.includes(ext)
-      ? "application/octet-stream"
-      : mime.getType(ext);
+    const contentType = ext === ".unityweb" ? "application/octet-stream" : mime.getType(ext);
 
     cache.set(req.path, { data, contentType, timestamp: Date.now() });
+
+    res.setHeader("Cache-Control", "public, max-age=2592000");
     res.writeHead(200, { "Content-Type": contentType });
     res.end(data);
   } catch (error) {
     console.error("Error fetching asset:", error);
-    res.setHeader("Content-Type", "text/html");
     res.status(500).send("Error fetching the asset");
   }
 });
 
-app.use(express.static(path.join(__dirname, "static")));
+// -------------------------------
+// ⚡ STATIC FILES (FAST)
+// -------------------------------
+
+app.use(express.static(path.join(__dirname, "static"), {
+  maxAge: "30d",
+  etag: false
+}));
+
 app.use("/ca", cors({ origin: true }));
+
+// -------------------------------
+// ⚡ ROUTES
+// -------------------------------
 
 const routes = [
   { path: "/b", file: "apps.html" },
@@ -152,7 +169,11 @@ routes.forEach(route => {
   });
 });
 
-app.use((req, res, next) => {
+// -------------------------------
+// ⚡ 404 + ERROR HANDLERS
+// -------------------------------
+
+app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, "static", "404.html"));
 });
 
@@ -161,24 +182,28 @@ app.use((err, req, res, next) => {
   res.status(500).sendFile(path.join(__dirname, "static", "404.html"));
 });
 
+// -------------------------------
+// 🚀 BARE-FIRST ROUTING (FASTEST POSSIBLE)
+// -------------------------------
+
 server.on("request", (req, res) => {
   if (bareServer.shouldRoute(req)) {
-    bareServer.routeRequest(req, res);
-  } else {
-    app(req, res);
+    return bareServer.routeRequest(req, res);
   }
+  app(req, res);
 });
 
 server.on("upgrade", (req, socket, head) => {
   if (bareServer.shouldRoute(req)) {
-    bareServer.routeUpgrade(req, socket, head);
-  } else {
-    socket.end();
+    return bareServer.routeUpgrade(req, socket, head);
   }
+  socket.end();
 });
 
-server.on("listening", () => {
-  console.log(chalk.green(`🌍 Server is running on http://localhost:${PORT}`));
-});
+// -------------------------------
+// 🚀 START SERVER
+// -------------------------------
 
-server.listen({ port: PORT });
+server.listen(PORT, () => {
+  console.log(chalk.green(`🌍 NebulaWeb running at http://localhost:${PORT}`));
+});
