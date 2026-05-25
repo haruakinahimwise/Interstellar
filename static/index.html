@@ -18,119 +18,35 @@
 
 <body class="center" onload="SplashT">
   <div class="f-nav"></div>
-
   <div id="particles-js">
     <script rel="preload" src="https://cdn.jsdelivr.net/particles.js/2.0.0/"></script>
-
-    <!-- 🌌 NEW NEBULAWEB UI -->
-    <div class="nebula-wrapper">
-      <div class="nebula-title">NebulaWeb</div>
-      <div class="nebula-sub">Explore the universe freely</div>
-
-      <form id="uv-form" method="POST">
-        <input id="uv-input" class="truncate" placeholder="Search or enter a URL..." type="text" autocomplete="off" />
-      </form>
-
-      <p id="splash" style="margin-top:20px;"></p>
+    <div class="main">
+      <h1 class="title">&#105;&#110;&#116;&#101;&#114;&#115;&#116;&#101;&#108;&#108;&#97;&#114;&#32;&#118;&#54;&#46;&#55;&#46;&#48;</h1>
+      <p id="splash"></p>
+      <div class="search-container">
+        <form id="fv" method="POST">
+          <input id="input" class="truncate" placeholder="enter url :p" type="text" />
+        </form>
+      </div>
     </div>
   </div>
-
-  <!-- 🌌 NEBULAWEB CSS -->
-  <style>
-    body {
-      margin: 0;
-      background: radial-gradient(circle at 20% 20%, #3b0066, #0a0014 70%);
-      background-attachment: fixed;
-      font-family: "Inter", sans-serif;
-      color: white;
-      overflow-x: hidden;
-    }
-
-    /* Floating nebula clouds */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: url('/static/img/clouds.png') center/cover no-repeat;
-      opacity: 0.25;
-      animation: floatClouds 40s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes floatClouds {
-      from { transform: translateX(0); }
-      to { transform: translateX(-800px); }
-    }
-
-    .nebula-wrapper {
-      text-align: center;
-      margin-top: 18vh;
-    }
-
-    .nebula-title {
-      font-size: 70px;
-      font-weight: 900;
-      letter-spacing: -2px;
-      text-shadow: 0 0 25px #a855f7;
-    }
-
-    .nebula-sub {
-      font-size: 22px;
-      opacity: 0.8;
-      margin-top: 10px;
-    }
-
-    #uv-input {
-      margin-top: 35px;
-      width: 420px;
-      padding: 14px 20px;
-      border-radius: 12px;
-      border: none;
-      outline: none;
-      font-size: 18px;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 0 15px rgba(168,85,247,0.4);
-      transition: 0.2s;
-    }
-
-    #uv-input:focus {
-      background: rgba(255,255,255,0.15);
-      box-shadow: 0 0 25px rgba(168,85,247,0.7);
-    }
-  </style>
-
-  <!-- 🌌 UV SEARCH HANDLER -->
-  <script>
-    const form = document.getElementById("uv-form");
-    const input = document.getElementById("uv-input");
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const url = input.value.trim();
-      if (!url) return;
-
-      form.action = "/ca/" + encodeURIComponent(url);
-      form.submit();
-    });
-  </script>
-
   <script src="assets/js/index-3.js"></script>
   <script src="/assets/js/h1.js"></script>
   <script src="./assets/mathematics/bundle.js?v=2025-04-15"></script>
   <script src="./assets/mathematics/config.js?v=2025-04-15"></script>
   <script src="/assets/js/m1.js"></script>
-
-  <!-- DO NOT REMOVE -->
+  <!-- DO NOT REMOVE-->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WKJQ5QHQTJ"></script>
   <script>
     window.dataLayer = window.dataLayer || []
-    function gtag() { dataLayer.push(arguments) }
+    function gtag() {
+      dataLayer.push(arguments)
+    }
     gtag("js", new Date())
+
     gtag("config", "G-WKJQ5QHQTJ")
   </script>
-  <!-- DO NOT REMOVE -->
-
+  <!-- DO NOT REMOVE-->
 </body>
+
 </html>
