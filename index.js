@@ -14,14 +14,7 @@ console.log(chalk.yellow("🚀 Starting server..."));
 const __dirname = process.cwd();
 const server = http.createServer();
 const app = express();
-const bareServer = createBareServer("/ca/", {
-  logLevel: "error",
-  turbo: true,
-  http2: true,
-  maxConnections: 2000,
-  keepAliveTimeout: 65000,
-  requestTimeout: 60000
-});
+const bareServer = createBareServer("/ca/");
 const PORT = process.env.PORT || 8080;
 const cache = new Map();
 const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // Cache for 30 Days
