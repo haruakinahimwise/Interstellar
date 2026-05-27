@@ -37,7 +37,7 @@ function processUrl(value, path) {
   const engine = localStorage.getItem("engine");
   const searchUrl = engine ? engine : "https://duckduckgo.com/?q=";
 
-  // If not a URL → treat as search
+  // search query → convert to search engine
   if (!isUrl(url)) {
     url = searchUrl + url;
   } else if (!(url.startsWith("https://") || url.startsWith("http://"))) {
@@ -45,21 +45,18 @@ function processUrl(value, path) {
   }
 
   const encoded = __uv$config.encodeUrl(url);
-
-  // ⭐ REAL HISTORY CLOAKING — ALWAYS USE UV BARE PATH
-  // dy mode → /ca/q/
   const dy = localStorage.getItem("dy");
+
+  // ⭐ HISTORY CLOAKING: replace() instead of href
   if (dy === "true") {
-    return location.replace("/ca/q/" + encoded);
+    return location.replace(`/a/q/${encoded}`);
   }
 
-  // tab mode → /d (no history)
   if (path) {
     return location.replace(path);
   }
 
-  // normal mode → /ca/
-  return location.replace("/ca/" + encoded);
+  return location.replace(`/a/${encoded}`);
 }
 
 function go(value) {
@@ -71,7 +68,7 @@ function blank(value) {
 }
 
 function dy(value) {
-  processUrl(value, `/ca/q/${__uv$config.encodeUrl(value)}`);
+  processUrl(value, `/a/q/${__uv$config.encodeUrl(value)}`);
 }
 
 function isUrl(val = "") {
