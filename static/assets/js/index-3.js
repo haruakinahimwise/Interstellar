@@ -37,22 +37,29 @@ function processUrl(value, path) {
   const engine = localStorage.getItem("engine");
   const searchUrl = engine ? engine : "https://duckduckgo.com/?q=";
 
+  // If not a URL → treat as search
   if (!isUrl(url)) {
     url = searchUrl + url;
   } else if (!(url.startsWith("https://") || url.startsWith("http://"))) {
     url = `https://${url}`;
   }
 
-  sessionStorage.setItem("GoUrl", __uv$config.encodeUrl(url));
-  const dy = localStorage.getItem("dy");
+  const encoded = __uv$config.encodeUrl(url);
 
+  // ⭐ REAL HISTORY CLOAKING — ALWAYS USE UV BARE PATH
+  // dy mode → /ca/q/
+  const dy = localStorage.getItem("dy");
   if (dy === "true") {
-    location.replace(`/a/q/${__uv$config.encodeUrl(url)}`);
-  } else if (path) {
-    location.replace(path);
-  } else {
-    location.replace(`/a/${__uv$config.encodeUrl(url)}`);
+    return location.replace("/ca/q/" + encoded);
   }
+
+  // tab mode → /d (no history)
+  if (path) {
+    return location.replace(path);
+  }
+
+  // normal mode → /ca/
+  return location.replace("/ca/" + encoded);
 }
 
 function go(value) {
@@ -64,7 +71,7 @@ function blank(value) {
 }
 
 function dy(value) {
-  processUrl(value, `/a/q/${__uv$config.encodeUrl(value)}`);
+  processUrl(value, `/ca/q/${__uv$config.encodeUrl(value)}`);
 }
 
 function isUrl(val = "") {
