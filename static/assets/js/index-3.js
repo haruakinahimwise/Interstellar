@@ -30,7 +30,7 @@ function openGoogleCloak(value) {
   // ⭐ Open a blank page
   const win = window.open("about:blank", "_blank");
 
-  // ⭐ Inject a fake Google page + iframe loader
+  // ⭐ Inject Google cloak + service worker + iframe loader
   win.document.write(`
     <html>
       <head>
@@ -80,15 +80,19 @@ function openGoogleCloak(value) {
         </div>
         <div class="loading">Loading…</div>
 
-        <iframe id="proxy-frame" src="/a/${encoded}"></iframe>
+        <iframe id="proxy-frame"></iframe>
 
         <script>
-          // Show iframe after load
-          const frame = document.getElementById("proxy-frame");
-          frame.onload = () => {
-            document.body.innerHTML = "";
-            frame.style.display = "block";
-          };
+          // ⭐ Register service worker INSIDE the blank page
+          navigator.serviceWorker.register("../sw.js?v=2025-04-15", { scope: "/a/" })
+            .then(() => {
+              const frame = document.getElementById("proxy-frame");
+              frame.src = "/a/${encoded}";
+              frame.onload = () => {
+                document.body.innerHTML = "";
+                frame.style.display = "block";
+              };
+            });
         </script>
       </body>
     </html>
