@@ -5,75 +5,98 @@ window.addEventListener("load", () => {
   });
 });
 
-let xl;
-
-try {
-  xl = window.top.location.pathname === "/d";
-} catch {
-  try {
-    xl = window.parent.location.pathname === "/d";
-  } catch {
-    xl = false;
-  }
-}
-
 const form = document.getElementById("fv");
 const input = document.getElementById("input");
 
 if (form && input) {
-  form.addEventListener("submit", async event => {
-    event.preventDefault();
-    try {
-      if (xl) processUrl(input.value, "");
-      else processUrl(input.value, "/d");
-    } catch {
-      processUrl(input.value, "/d");
-    }
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    openGoogleCloak(input.value);
   });
 }
 
-function processUrl(value, path) {
+function openGoogleCloak(value) {
   let url = value.trim();
-  const engine = localStorage.getItem("engine");
-  const searchUrl = engine ? engine : "https://duckduckgo.com/?q=";
+  const engine = localStorage.getItem("engine") || "https://duckduckgo.com/?q=";
 
-  // search query → convert to search engine
   if (!isUrl(url)) {
-    url = searchUrl + url;
-  } else if (!(url.startsWith("https://") || url.startsWith("http://"))) {
-    url = `https://${url}`;
+    url = engine + url;
+  } else if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = "https://" + url;
   }
 
   const encoded = __uv$config.encodeUrl(url);
-  const dy = localStorage.getItem("dy");
 
-  // ⭐ HISTORY CLOAKING: replace() instead of href
-  if (dy === "true") {
-    return location.replace(`/a/q/${encoded}`);
-  }
+  // ⭐ Open a blank page
+  const win = window.open("about:blank", "_blank");
 
-  if (path) {
-    return location.replace(path);
-  }
+  // ⭐ Inject a fake Google page + iframe loader
+  win.document.write(`
+    <html>
+      <head>
+        <title>Google</title>
+        <link rel="icon" href="https://www.google.com/favicon.ico">
+        <style>
+          body {
+            margin: 0;
+            background: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+          }
+          .logo {
+            font-size: 80px;
+            font-weight: bold;
+            color: #4285F4;
+            letter-spacing: -5px;
+          }
+          .logo span:nth-child(2) { color: #EA4335; }
+          .logo span:nth-child(3) { color: #FBBC05; }
+          .logo span:nth-child(4) { color: #4285F4; }
+          .logo span:nth-child(5) { color: #34A853; }
+          .logo span:nth-child(6) { color: #EA4335; }
+          .loading {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
+          }
+          iframe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            display: none;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="logo">
+          <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+        </div>
+        <div class="loading">Loading…</div>
 
-  return location.replace(`/a/${encoded}`);
-}
+        <iframe id="proxy-frame" src="/a/${encoded}"></iframe>
 
-function go(value) {
-  processUrl(value, "/d");
-}
+        <script>
+          // Show iframe after load
+          const frame = document.getElementById("proxy-frame");
+          frame.onload = () => {
+            document.body.innerHTML = "";
+            frame.style.display = "block";
+          };
+        </script>
+      </body>
+    </html>
+  `);
 
-function blank(value) {
-  processUrl(value);
-}
-
-function dy(value) {
-  processUrl(value, `/a/q/${__uv$config.encodeUrl(value)}`);
+  win.document.close();
 }
 
 function isUrl(val = "") {
-  if (/^http(s?):\/\//.test(val) || (val.includes(".") && val.substr(0, 1) !== " ")) {
-    return true;
-  }
-  return false;
+  return /^http(s?):\/\//.test(val) || (val.includes(".") && val[0] !== " ");
 }
