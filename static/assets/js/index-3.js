@@ -31,6 +31,7 @@ if (form && input) {
     }
   });
 }
+
 function processUrl(value, path) {
   let url = value.trim();
   const engine = localStorage.getItem("engine");
@@ -46,11 +47,11 @@ function processUrl(value, path) {
   const dy = localStorage.getItem("dy");
 
   if (dy === "true") {
-    window.location.href = `/a/q/${__uv$config.encodeUrl(url)}`;
+    location.replace(`/a/q/${__uv$config.encodeUrl(url)}`);
   } else if (path) {
-    location.href = path;
+    location.replace(path);
   } else {
-    window.location.href = `/a/${__uv$config.encodeUrl(url)}`;
+    location.replace(`/a/${__uv$config.encodeUrl(url)}`);
   }
 }
 
